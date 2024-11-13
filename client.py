@@ -26,15 +26,23 @@ def start_client():
                 print("Server closed the connection.")
                 break
 
-            print("Received message:", message)
+            print(message)
 
-            # Check if message prompts for ship input
+            # Check message prompts
             if "Input your ship of length" in message:
                 # Handle user input for ship placement
                 while True:
-                    placement = input("Enter your ship placement (Format: startrow startcol - endrow endcol, e.g., A5-E5): ")
-                    if re.match("^[A-J][0-9]-[A-J][0-9]$", placement):
+                    placement = input("Enter your ship placement (Format: startrow startcol - endrow endcol, e.g., A5-E5): ") # Change for first move?
+                    if re.match("^[A-J][0-9]-[A-J][0-9]$", placement): # Make it so that lower case letters 
                         send_srvr_msg(client_socket, placement)
+                        break
+                    else:
+                        print("Invalid input. Please try again.")
+            elif "Input Your Move" in message:
+                while True:
+                    move = input("Your move (Ex: A1): ")
+                    if re.match("^[A-J][0-9]$", move):
+                        send_srvr_msg(client_socket, move)
                         break
                     else:
                         print("Invalid input. Please try again.")
