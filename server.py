@@ -11,16 +11,13 @@ from urllib.request import urlopen
 # Try to get this working on multiple hosts
 
 USE_LOCALHOST = False # If you want to change this, you should also change it in client.py
-
-def getIP():
-    return re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(str(urlopen('http://checkip.dyndns.com/').read())).group(1)
     
 # Define server IP and port
 if USE_LOCALHOST:
     SERVER_HOST = 'localhost'
     SERVER_PORT = 3000
 else:
-    SERVER_HOST = socket.gethostbyname(socket.gethostname()) # Get current IP of server
+    SERVER_HOST = re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(str(urlopen('http://checkip.dyndns.com/').read())).group(1) # Get current IP of server
     SERVER_PORT = 5678
 
 BOARD_SIZE = 10
