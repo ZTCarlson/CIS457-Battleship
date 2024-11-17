@@ -8,11 +8,15 @@ import time
 # TODO:
 # Try to get this working on multiple hosts
 
-#SERVER_HOST = socket.gethostbyname(socket.gethostname())
+USE_LOCALHOST = False # If you want to change this, you should also change it in client.py
 
 # Define server IP and port
-SERVER_HOST = 'localhost'
-SERVER_PORT = 3000
+if USE_LOCALHOST:
+    SERVER_HOST = 'localhost'
+    SERVER_PORT = 3000
+else:
+    SERVER_HOST = socket.gethostbyname(socket.gethostname()) # Get current IP of server
+    SERVER_PORT = 5678
 
 BOARD_SIZE = 10
 LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]

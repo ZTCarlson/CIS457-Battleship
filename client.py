@@ -1,19 +1,30 @@
 import socket
 import re
 
-# TODO:
-# Make sure that client does not have any ships in the slot, or that the input is out of bounds
+# References:
+# https://www.geeksforgeeks.org/how-to-validate-an-ip-address-using-regex/
 
-# Define the server's IP address and port
-SERVER_HOST = 'localhost'
-SERVER_PORT = 3000
+USE_LOCALHOST = False # If you want to change this, you should also change it in server.py
 
 def send_srvr_msg(client_socket, message):
     client_socket.send(message.encode())
 
 def start_client():
+    # Define the server's IP address and port
+    if USE_LOCALHOST:
+        server_host = 'localhost'
+        server_port = 3000
+    else:
+        while True:
+            server_host = input("Enter the server IP address (Ex: 10.0.0.2): ")
+            if re.match("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$", server_host):
+                break
+            else:
+                print("Invalid input. Please try again.")
+        server_port = 5678
+
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((SERVER_HOST, SERVER_PORT))
+    client_socket.connect((server_host, server_port))
     print("Connected to the server. Listening for messages...")
 
     while True:
