@@ -1,6 +1,8 @@
+import re
 import socket
 import threading
 import time
+from urllib.request import urlopen
 
 # References:
 # https://www.geeksforgeeks.org/python-program-find-ip-address/
@@ -10,6 +12,9 @@ import time
 
 USE_LOCALHOST = False # If you want to change this, you should also change it in client.py
 
+def getIP():
+    return re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(str(urlopen('http://checkip.dyndns.com/').read())).group(1)
+    
 # Define server IP and port
 if USE_LOCALHOST:
     SERVER_HOST = 'localhost'
