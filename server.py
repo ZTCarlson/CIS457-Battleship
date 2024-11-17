@@ -8,7 +8,7 @@ from urllib.request import urlopen
 # https://www.geeksforgeeks.org/python-program-find-ip-address/
 
 # TODO:
-# Try to get this working on multiple hosts
+# Try to get this working on multiple hosts (in different networks, I think the same network should work now)
 
 USE_LOCALHOST = False # If you want to change this, you should also change it in client.py
     
@@ -17,7 +17,7 @@ if USE_LOCALHOST:
     SERVER_HOST = 'localhost'
     SERVER_PORT = 3000
 else:
-    SERVER_HOST = re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(str(urlopen('http://checkip.dyndns.com/').read())).group(1) # Get current IP of server
+    SERVER_HOST = socket.gethostbyname(socket.gethostname()) # Get current IP of server
     SERVER_PORT = 5678
 
 BOARD_SIZE = 10
@@ -101,7 +101,7 @@ def attemptMove(currentPlayer, inputMove):
     try:
         if move_boards[currentPlayer][move_row][move_col] == "H" or move_boards[currentPlayer][move_row][move_col] == "M":
             print("Already moved there")
-            return False
+            return [False, None]
 
         if oppBoard[move_row][move_col] != '~':  # It's a hit
             move_boards[currentPlayer][move_row][move_col] = "H"
@@ -112,17 +112,16 @@ def attemptMove(currentPlayer, inputMove):
 
             send_client_msg(client_sockets[currentPlayer], message)
             #send_client_msg(client_sockets[getOtherPlayer(currentPlayer)], message)
-
+            return [True, "H"]
         else:  # It's a miss
             move_boards[currentPlayer][move_row][move_col] = "M"
             oppBoard[move_row][move_col] = "M"
             send_client_msg(client_sockets[currentPlayer], "Miss!")
-        
-        return True
+            return [True, "M"]
     
     except Exception:
         print("Error when attempting move.")
-        return False
+        return [False, None]
 
 
 def checkForSunkShip(currentPlayer):
@@ -237,8 +236,10 @@ def handle_client(client_socket, client_number):
         elif turn != client_number:
             send_client_msg(client_socket, "Not your turn yet\n")
         else:
+            result = [False, None]
             while True:
-                if attemptMove(client_number, move):
+                result = attemptMove(client_number, move)
+                if result[0]: # If the move was successful
                     break
                 send_client_msg(client_socket, "\nMove unsuccessful, possibly due to you already moving there. Please try again\nInput Your Move")
                 move = client_socket.recv(1024).decode()
@@ -247,7 +248,8 @@ def handle_client(client_socket, client_number):
                 game_end = True
                 turn = getOtherPlayer(client_number)
                 break
-            turn = getOtherPlayer(client_number) # add: Do not change the turn if you got a hit
+            if result[1] == "M": # Change the player turn if the move was a miss
+                turn = getOtherPlayer(client_number)
 
     # Close the connection after setup
     client_socket.close()
@@ -258,8 +260,12 @@ def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((SERVER_HOST, SERVER_PORT))
     server_socket.listen(2)
-    print(f"Server is listening on {SERVER_HOST}:{SERVER_PORT}")
-
+    print(f"Server is listening on {SERVER_HOST}:{SERVER_PORT}. Grabbing IP address...")
+    if not USE_LOCALHOST:
+        print("If connecting from a different network, client should connect to (WIP): " 
+            + re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(str(urlopen('http://checkip.dyndns.com/').read())).group(1))
+        print("If connecting from the same network, client should connect to: " + SERVER_HOST)
+    
     while True:
         client_socket, client_addr = server_socket.accept()
         print(f"New connection from {client_addr}")
