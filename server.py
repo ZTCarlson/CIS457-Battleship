@@ -1,8 +1,14 @@
 import socket
 import threading
+import time
+
+# References:
+# https://www.geeksforgeeks.org/python-program-find-ip-address/
 
 # TODO:
-# Start the game/turn logic
+# Try to get this working on multiple hosts
+
+#SERVER_HOST = socket.gethostbyname(socket.gethostname())
 
 # Define server IP and port
 SERVER_HOST = 'localhost'
@@ -14,14 +20,16 @@ LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
 # Store client boards and track connection
 client_boards = [None, None]
 move_boards = [None, None]
-ship_placements = [
-    {"5": [], "4": [], "3": [], "2": [], "1": []},
-    {"5": [], "4": [], "3": [], "2": [], "1": []}
+shipSunk = [
+    [False, False, False, False, False],
+    [False, False, False, False, False],
 ]
 client_sockets = [None, None]
 client_ready = [False, False]
 client_count = 0
 client_count_lock = threading.Lock()
+game_end = False
+turn = 0
 
 def send_client_msg(client_socket, message):
     client_socket.send(message.encode())
@@ -52,26 +60,26 @@ def putShipOnBoard(ship, player, length):
 
             # Check to see if there's already a ship in the specified location
             for col in range(min(start_col, end_col), max(start_col, end_col) + 1):
-                if board[start_row][col] == 'S':
+                if board[start_row][col] != '~':
                     print("One or more spot(s) was occupied. Please try again")
                     return False
             
             for col in range(min(start_col, end_col), max(start_col, end_col) + 1):
-                board[start_row][col] = 'S'
-                ship_placements[player][str(length)] += [start_row, col]
+                board[start_row][col] = str(length)
+                
         elif start_col == end_col:  # Vertical placement
             if length != ((max(start_row, end_row) + 1) - min(start_row, end_row)):
                 print("Ship was incorrect length. Expected: " + str(length) + " Received: " + str((max(start_row, end_row) + 1) - min(start_row, end_row)))
                 return False
 
             for row in range(min(start_row, end_row), max(start_row, end_row) + 1):
-                if board[row][start_col] == 'S':
+                if board[row][start_col] != '~':
                     print("One or more spot(s) was occupied. Please try again")
                     return False
 
             for row in range(min(start_row, end_row), max(start_row, end_row) + 1):
-                board[row][start_col] = 'S'
-                ship_placements[player][str(length)] += [row, start_col]
+                board[row][start_col] = str(length)
+                
         else:
             print("Invalid ship placement. Ships must be placed in a straight line.")
             return False
@@ -80,7 +88,6 @@ def putShipOnBoard(ship, player, length):
         print("Invalid input format.")
         return False
 
-# This is not working for some reason
 def attemptMove(currentPlayer, inputMove):
     oppBoard = client_boards[getOtherPlayer(currentPlayer)]  # Opponent's board
     move_row, move_col = LETTERS.index(inputMove[0].upper()), int(inputMove[1])
@@ -90,48 +97,61 @@ def attemptMove(currentPlayer, inputMove):
             print("Already moved there")
             return False
 
-        if oppBoard[move_row][move_col] == 'S':  # It's a hit
+        if oppBoard[move_row][move_col] != '~':  # It's a hit
             move_boards[currentPlayer][move_row][move_col] = "H"
+            oppBoard[move_row][move_col] = "H"
             message = "Hit!"
             # Check if this hit causes any ship to be sunk
-            sunk_ship = checkForSunkShip(currentPlayer, move_row, move_col)
-            if sunk_ship:
-                message += f" You sunk the opponent's {sunk_ship} ship!"
+            checkForSunkShip(currentPlayer)
 
             send_client_msg(client_sockets[currentPlayer], message)
-            send_client_msg(client_sockets[getOtherPlayer(currentPlayer)], message)
+            #send_client_msg(client_sockets[getOtherPlayer(currentPlayer)], message)
 
         else:  # It's a miss
             move_boards[currentPlayer][move_row][move_col] = "M"
+            oppBoard[move_row][move_col] = "M"
             send_client_msg(client_sockets[currentPlayer], "Miss!")
         
         return True
-
+    
     except Exception:
         print("Error when attempting move.")
         return False
 
 
-def checkForSunkShip(currentPlayer, hit_row, hit_col):
-    # Loop through each ship length in ship_placements
-    for ship_length, positions in ship_placements[getOtherPlayer(currentPlayer)].items():
-        # Extract the ship's positions
-        ship_positions = [(positions[i], positions[i+1]) for i in range(0, len(positions), 2)]
-        
-        # Check if the current hit is part of this ship
-        if (hit_row, hit_col) in ship_positions:
-            # Check if all positions of this ship have been hit
-            all_hit = True
-            for (row, col) in ship_positions:
-                if move_boards[currentPlayer][row][col] != "H":
-                    all_hit = False
-                    break
-
-            if all_hit:
-                # If all parts of the ship are hit, the ship is sunk
-                return f"{ship_length}-unit"  # Return the size of the sunk ship (e.g., "5-unit")
+def checkForSunkShip(currentPlayer):
+    oppBoard = client_boards[getOtherPlayer(currentPlayer)]
+    shipFound = [False, False, False, False, False]
+    for row in range(BOARD_SIZE):
+        for col in range(BOARD_SIZE):
+            if shipFound[4] == False and oppBoard[row][col] == '5':
+                shipFound[4] = True
+            if shipFound[3] == False and oppBoard[row][col] == '4':
+                shipFound[3] = True
+            if shipFound[2] == False and oppBoard[row][col] == '3':
+                shipFound[2] = True
+            if shipFound[1] == False and oppBoard[row][col] == '2':
+                shipFound[1] = True
+            if shipFound[0] == False and oppBoard[row][col] == '1':
+                shipFound[0] = True
+        if shipFound[0] and shipFound[1] and shipFound[2] and shipFound[3] and shipFound[4]:
+            break
     
-    return None  # If no ship was sunk, return None
+    if shipFound[4] == False and shipSunk[getOtherPlayer(currentPlayer)][4] == False:
+        shipSunk[getOtherPlayer(currentPlayer)][4] = True
+        send_client_msg(client_sockets[currentPlayer], "Ship of Length 5 Sunk!")
+    if shipFound[3] == False and shipSunk[getOtherPlayer(currentPlayer)][3] == False:
+        shipSunk[getOtherPlayer(currentPlayer)][3] = True
+        send_client_msg(client_sockets[currentPlayer], "Ship of Length 4 Sunk!")
+    if shipFound[2] == False and shipSunk[getOtherPlayer(currentPlayer)][2] == False:
+        shipSunk[getOtherPlayer(currentPlayer)][2] = True
+        send_client_msg(client_sockets[currentPlayer], "Ship of Length 3 Sunk!")
+    if shipFound[1] == False and shipSunk[getOtherPlayer(currentPlayer)][1] == False:
+        shipSunk[getOtherPlayer(currentPlayer)][1] = True
+        send_client_msg(client_sockets[currentPlayer], "Ship of Length 2 Sunk!")
+    if shipFound[0] == False and shipSunk[getOtherPlayer(currentPlayer)][0] == False:
+        shipSunk[getOtherPlayer(currentPlayer)][0] = True
+        send_client_msg(client_sockets[currentPlayer], "Ship of Length 1 Sunk!")
 
 def getOtherPlayer(currentPlayer):
     if currentPlayer == 1:
@@ -154,14 +174,9 @@ def checkForWin(currentPlayer):
 
 # Handle individual client connection
 def handle_client(client_socket, client_number):
-    global client_count
+    global client_count, game_end, turn
 
     send_client_msg(client_socket, f"You are client {client_number + 1}\n")
-
-    # Notify client of waiting status if needed
-    #with client_count_lock:
-    #    if client_count < 2:
-    #        send_client_msg(client_socket, "Waiting for the other client to connect...\n")
     
     # Initialize the board for the client
     client_boards[client_number] = initialize_board()
@@ -190,15 +205,23 @@ def handle_client(client_socket, client_number):
     move_boards[client_number] = initialize_board()
     client_ready[client_number] = True
 
-    turn = 0
-    lost = False
     # Get move from player (main game loop)
+    # Make it so that the board is not re-printed every time?
     while True:
-        if lost:
+        while turn != client_number:
+            time.sleep(0.1)
+
+        if game_end:
             send_client_msg("You lose!\n")
             break
 
-        send_client_msg(client_socket, "Input Your Move\n") # Add sending the boards
+        send_client_msg(client_socket, 
+            "Your Moves:\n" + 
+            print_board(move_boards[client_number]) + 
+            "\nYour Board:\n" + 
+            print_board(client_boards[client_number]) + 
+            "\nInput Your Move\n"
+        )
         move = client_socket.recv(1024).decode()
         
         if client_count < 2:
@@ -211,8 +234,12 @@ def handle_client(client_socket, client_number):
             while True:
                 if attemptMove(client_number, move):
                     break
+                send_client_msg(client_socket, "\nMove unsuccessful, possibly due to you already moving there. Please try again\nInput Your Move")
+                move = client_socket.recv(1024).decode()
             if checkForWin(client_number):
-                send_client_msg(client_socket, "You win!\n")
+                send_client_msg(client_socket, "\nYou win!\n")
+                game_end = True
+                turn = getOtherPlayer(client_number)
                 break
             turn = getOtherPlayer(client_number) # add: Do not change the turn if you got a hit
 
