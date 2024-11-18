@@ -6,6 +6,7 @@ from urllib.request import urlopen
 
 # References:
 # https://www.geeksforgeeks.org/python-program-find-ip-address/
+# https://github.com/katmfoo/python-client-server
 
 # TODO:
 # Try to get this working on multiple hosts (in different networks, I think the same network should work now)
@@ -262,8 +263,6 @@ def start_server():
     server_socket.listen(2)
     print(f"Server is listening on {SERVER_HOST}:{SERVER_PORT}. Grabbing IP address...")
     if not USE_LOCALHOST:
-        print("If connecting from a different network, client should connect to (WIP): " 
-            + re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(str(urlopen('http://checkip.dyndns.com/').read())).group(1))
         print("If connecting from the same network, client should connect to: " + SERVER_HOST)
     
     while True:
