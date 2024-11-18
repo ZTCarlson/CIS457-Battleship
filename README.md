@@ -19,7 +19,7 @@ python3 client.py
 ```
 4. The client will ask the user for the server IP. Once the server starts, it will print an IP for the client to connect to. This is the private IP of the host. Input this IP address and press enter, and you should be good to go.
 ### Localhost
-1. If it isn't already, set the `USE_LOCALHOST` variable to `False` in both `server.py` and `client.py`
+1. If it isn't already, set the `USE_LOCALHOST` variable to `True` in both `server.py` and `client.py`
 2. Open 3 terminals to the repository location
 3. Start the server in one terminal
 ```
