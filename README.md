@@ -1,5 +1,5 @@
 # CIS457-Battleship
-Zachary Carlson & Anthony Lazo
+### Zachary Carlson & Anthony Lazo
 
 ## Compile Instructions
 
