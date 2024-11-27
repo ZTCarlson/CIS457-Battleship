@@ -6,9 +6,6 @@ import time
 # https://www.geeksforgeeks.org/python-program-find-ip-address/
 # https://github.com/katmfoo/python-client-server
 
-# TODO:
-# Slideshow
-
 USE_LOCALHOST = False # If you want to change this, you should also change it in client.py
     
 # Define server IP and port
@@ -186,7 +183,7 @@ def get_other_player(current_player):
 
 # Check to see if there are 15 hits by the current player
 def check_for_win(current_player):
-    hit_count = 0    
+    hit_count = 0
     for row in range(BOARD_SIZE):
         for col in range(BOARD_SIZE):
             if move_boards[current_player][row][col] == "H":
