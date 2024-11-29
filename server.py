@@ -234,7 +234,7 @@ def handle_client(server_socket, client_socket, client_number):
                 placement = get_client_msg(client_socket)
 
                 # Attempt to place the ship on the board
-                if put_ship_on_board(placement, client_number, length):
+                if put_ship_on_board(placement, client_number, length): #(ex. placement == A0-A4)
                     print("Client " + str(client_number + 1) + " placed a ship: " + placement)
                     break
                 else:
@@ -279,7 +279,7 @@ def handle_client(server_socket, client_socket, client_number):
             elif turn != client_number:
                 send_client_msg(client_socket, "Not your turn yet\n")
             else:
-                result = [False, None]
+                result = [False, None] 
                 # Try the input player move
                 while True:
                     result = attempt_move(client_number, move)
@@ -300,11 +300,11 @@ def handle_client(server_socket, client_socket, client_number):
 
         # Close the connection once the game is finished
         client_socket.close()
-    except Exception:
+    except Exception: # this exception is for when a client closes the connection before a winner and loser is found
         if not client_closed:
             print("Client " + str(client_number + 1) + " closed the connection. Ending game...")
             client_closed = True
-        if client_sockets[get_other_player(client_number)]:
+        if client_sockets[get_other_player(client_number)]: # if a socket still exists that is open, it closes it
             client_sockets[get_other_player(client_number)].close()
     if server_socket:
         if game_end:
