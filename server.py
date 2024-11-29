@@ -74,12 +74,13 @@ def put_ship_on_board(ship, player, length):
         board = client_boards[player] # Get the current board
         start, end = ship.split('-') # Split ship into two parts (Ex: A5-E5 --> start="A5", end="E5")
         # Convert the input into the correct format for the board array (Ex: A5 --> start_row=0, start_col=5)
-        start_row, start_col = LETTERS.index(start[0]), int(start[1])
+        # #grabbing the index of the start variable(ex. A) and looking for the index corresponding to it in the "Letters" array
+        start_row, start_col = LETTERS.index(start[0]), int(start[1]) 
         end_row, end_col = LETTERS.index(end[0]), int(end[1])
 
         # Determine if the ship is horizontal or vertical
-        if start_row == end_row:  # Horizontal placement (rows are the same, Ex: A0-A4)
-            # Iterating over the columns
+        if start_row == end_row:  # Horizontal placement (rows are the same, Ex: A0-A4 -> 0 == 0)
+            # Iterating over the columns (this is getting the range of the columns it needs to iterate through)
             columns = [min(start_col, end_col), (max(start_col, end_col) + 1)]
 
             # Check to make sure that the ship is the expected length
@@ -126,8 +127,11 @@ def put_ship_on_board(ship, player, length):
         return False
 
 # Attempt a move (will be invalid if the move is already done by the current player)
-def attempt_move(current_player, input_move):
-    opp_board = client_boards[get_other_player(current_player)]  # Opponent's board
+#Returns an array with two values. The first is whether or not the move went through, 
+# and the second is whether it was a hit ("H") or a miss ("M"). If the move did not go through, 
+# the second value will be set to none and the user will be prompted again for a move in the main game loop of handle_client
+def attempt_move(current_player, input_move): # ex for input_move A5
+    opp_board = client_boards[get_other_player(current_player)]  # Opponent's board(Remember your not changing the value of current_player)
     move_row, move_col = LETTERS.index(input_move[0]), int(input_move[1])
 
     try:
@@ -138,7 +142,7 @@ def attempt_move(current_player, input_move):
 
         if opp_board[move_row][move_col] != '~':  # It's a hit
             # Update boards
-            move_boards[current_player][move_row][move_col] = "H"
+            move_boards[current_player][move_row][move_col] = "H" 
             opp_board[move_row][move_col] = "H"
 
             # Check if this hit causes any ship to be sunk
