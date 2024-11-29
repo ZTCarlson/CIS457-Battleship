@@ -18,20 +18,25 @@ def start_client():
         server_port = 3000
     else:
         try: # Try to get the IP from the client
+            server_port = 5678
             while True:
-                server_host = input("Enter the server IP address (Ex: 10.0.0.2): ")
-                if re.match("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$", server_host):
+                while True:
+                    server_host = input("Enter the server IP address (Ex: 10.0.0.2): ")
+                    if re.match("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$", server_host):
+                        break
+                    else:
+                        print("Invalid input. Please try again.")
+                
+                try:    
+                    # Start the client socket and indicate successful connection
+                    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    client_socket.connect((server_host, server_port))
+                    print("Connected to the server. Listening for messages...")
                     break
-                else:
-                    print("Invalid input. Please try again.")
+                except Exception:
+                    print("Error connecting to server. Please try again")
         except KeyboardInterrupt: # Client closed during IP stage
             return
-        server_port = 5678
-
-    # Start the client socket and indicate successful connection
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((server_host, server_port))
-    print("Connected to the server. Listening for messages...")
 
     while True:
         try:
