@@ -127,9 +127,12 @@ def put_ship_on_board(ship, player, length):
         return False
 
 # Attempt a move (will be invalid if the move is already done by the current player)
-#Returns an array with two values. The first is whether or not the move went through, 
-# and the second is whether it was a hit ("H") or a miss ("M"). If the move did not go through, 
-# the second value will be set to none and the user will be prompted again for a move in the main game loop of handle_client
+#
+# Returns an array with two values. The first is whether or not the move went through, 
+# and the second is whether it was a hit ("H") or a miss ("M").
+#  
+# If the move did not go through, the second value will be set to none and the user will 
+# be prompted again for a move in the main game loop of handle_client
 def attempt_move(current_player, input_move): # ex for input_move A5
     opp_board = client_boards[get_other_player(current_player)]  # Opponent's board(Remember your not changing the value of current_player)
     move_row, move_col = LETTERS.index(input_move[0]), int(input_move[1])
@@ -142,11 +145,11 @@ def attempt_move(current_player, input_move): # ex for input_move A5
 
         if opp_board[move_row][move_col] != '~':  # It's a hit
             # Update boards
-            move_boards[current_player][move_row][move_col] = "H" 
+            move_boards[current_player][move_row][move_col] = "H"
             opp_board[move_row][move_col] = "H"
 
             # Check if this hit causes any ship to be sunk
-            check_for_sunk_ship(current_player)
+            check_for_sunk_ship(current_player, opp_board)
 
             # Inform the client the result of the move
             send_client_msg(client_sockets[current_player], "Hit!\n")
@@ -169,19 +172,29 @@ def attempt_move(current_player, input_move): # ex for input_move A5
         return [False, None]
 
 # Loop through the opponents board to check if you've sunk one of their ships
-def check_for_sunk_ship(current_player):
-    opp_board = client_boards[get_other_player(current_player)]
-    shipFound = [False, False, False, False, False]
+# This works by checking for a single number value of each ship length in the opponent's board.
+# For example, if the ship of length 3 has not been sunk, there should still be a 3 on the board.
+# If the ship of length 3 has been sunk, all of the 3s will be replaced with "H"s
+def check_for_sunk_ship(current_player, opp_board):
+    ship_found = [False, False, False, False, False]
     for row in range(BOARD_SIZE):
         for col in range(BOARD_SIZE):
             for length in [5, 4, 3, 2, 1]:
-                if not shipFound[length-1] and opp_board[row][col] == str(length):
-                    shipFound[length-1] = True
-        if shipFound[0] and shipFound[1] and shipFound[2] and shipFound[3] and shipFound[4]:
+                # Early exit check, don't need to check for the length if it is already sunk
+                if ship_sunk[get_other_player(current_player)][length-1]:
+                    break
+
+                # Found a number on the board, so the ship of that length must not be sunk
+                if not ship_found[length-1] and opp_board[row][col] == str(length):
+                    ship_found[length-1] = True
+
+        # Early exit check, no need to continue looping if you've found all of the ships
+        if ship_found[0] and ship_found[1] and ship_found[2] and ship_found[3] and ship_found[4]:
             break
     
+    # If a ship was sunk that was not already detected as sunk, notify the users
     for length in [5, 4, 3, 2, 1]:
-        if not shipFound[length-1] and not ship_sunk[get_other_player(current_player)][length-1]:
+        if not ship_found[length-1] and not ship_sunk[get_other_player(current_player)][length-1]:
             ship_sunk[get_other_player(current_player)][length-1] = True
             send_client_msg(client_sockets[current_player], "Ship of Length " + str(length) + " Sunk!")
             send_client_msg(client_sockets[get_other_player(current_player)], "Your Ship of Length " + str(length) + " Was Sunk!")
