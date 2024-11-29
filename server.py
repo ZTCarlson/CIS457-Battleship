@@ -59,7 +59,12 @@ def print_board(board):
 
 # Fill the board with blank spaces (water)
 def initialize_board():
-    return [['~' for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
+    board = []
+    for row in range(BOARD_SIZE):
+        board.append([])
+        for _ in range(BOARD_SIZE):
+            board[row].append("~")
+    return board
 
 # Attempt to place the ship on the board
 # ship is the input from the player (Ex: A5-E5)
