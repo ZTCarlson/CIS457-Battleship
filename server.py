@@ -196,8 +196,8 @@ def check_for_sunk_ship(current_player, opp_board):
     for length in [5, 4, 3, 2, 1]:
         if not ship_found[length-1] and not ship_sunk[get_other_player(current_player)][length-1]:
             ship_sunk[get_other_player(current_player)][length-1] = True
-            send_client_msg(client_sockets[current_player], "Ship of Length " + str(length) + " Sunk!")
-            send_client_msg(client_sockets[get_other_player(current_player)], "Your Ship of Length " + str(length) + " Was Sunk!")
+            send_client_msg(client_sockets[current_player], "Ship of Length " + str(length) + " Sunk!\n")
+            send_client_msg(client_sockets[get_other_player(current_player)], "Your Ship of Length " + str(length) + " Was Sunk!\n")
 
 # Gets the other client number (if current player is 1, other player is 0, and vice versa)
 def get_other_player(current_player):
