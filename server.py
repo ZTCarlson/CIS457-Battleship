@@ -301,8 +301,6 @@ def handle_client(server_socket, client_socket, client_number):
         if not client_closed:
             print("Client " + str(client_number + 1) + " closed the connection. Ending game...")
             client_closed = True
-        if client_sockets[get_other_player(client_number)] and not client_sockets[get_other_player(client_number)]._closed:
-            client_sockets[get_other_player(client_number)].close()
     finally:
         if client_socket:
             client_socket.close()
