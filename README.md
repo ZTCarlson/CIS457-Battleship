@@ -5,6 +5,8 @@
 
 Instructions are different depending on if you want to run the code on 2/3 hosts or just through localhost.
 
+Also, it would be a good idea to ensure that any current instance of server or client running on the intended host(s) are closed before starting a new game to insure that there's no unintended overlap.
+
 ### Different hosts
 Note that the code is not currently set up to run on hosts in different networks. Because of this, technically, this approach will still work for running the clients locally. It might just save some time to do the other approach, as you won't have to input the IP.
 
@@ -18,6 +20,7 @@ python3 server.py
 python3 client.py
 ```
 4. The client will ask the user for the server IP. Once the server starts, it will print an IP for the client to connect to. This is the private IP of the host. Input this IP address and press enter, and you should be good to go.
+
 ### Localhost
 1. If it isn't already, set the `USE_LOCALHOST` variable to `True` in both `server.py` and `client.py`
 2. Open 3 terminals to the repository location

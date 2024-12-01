@@ -1,9 +1,6 @@
 import socket
 import re
 
-# References:
-# https://www.geeksforgeeks.org/how-to-validate-an-ip-address-using-regex/
-
 USE_LOCALHOST = False # If you want to change this, you should also change it in server.py
 
 # Send a message through the client socket
@@ -45,7 +42,7 @@ def start_client():
 
             # If no message is received, the server might have closed the connection
             if not message:
-                print("Server closed the connection.")
+                print("\nServer closed the connection.")
                 break
             
             # Print the server message
@@ -56,8 +53,8 @@ def start_client():
                 if "Input your ship of length" in message:
                     # Handle user input for ship placement
                     while True:
-                        placement = input("Enter your ship placement (Format: startrow startcol - endrow endcol, e.g., A5-E5): ") # Change for first move?
-                        if re.match("^[A-J][0-9]-[A-J][0-9]$", placement): # Make it so that lower case letters 
+                        placement = input("Enter your ship placement (Format: startrow startcol - endrow endcol, e.g., A5-E5): ")
+                        if re.match("^[A-J][0-9]-[A-J][0-9]$", placement):
                             send_srvr_msg(client_socket, placement)
                             break
                         else:
@@ -74,7 +71,7 @@ def start_client():
                 break
 
         except Exception:
-            print("Server closed connection.")
+            print("\nServer closed the connection.")
             break
 
     # Close the client socket after loop exits
