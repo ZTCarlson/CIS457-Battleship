@@ -169,7 +169,6 @@ def attempt_move(current_player, input_move): # ex for input_move A5
             return [True, "M"]
     
     except Exception:
-        print("Error when attempting move.")
         return [False, None]
 
 # Loop through the opponents board to check if you've sunk one of their ships
