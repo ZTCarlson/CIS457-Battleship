@@ -125,7 +125,6 @@ def put_ship_on_board(ship, player, length):
         
         return True # Move was valid and ship was placed on the board
     except Exception:
-        print("Invalid input format (possibly due to game closing)")
         return False
 
 # Attempt a move (will be invalid if the move is already done by the current player)
