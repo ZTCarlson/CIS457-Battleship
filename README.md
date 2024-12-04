@@ -1,6 +1,12 @@
 # CIS457-Battleship
 ### Zachary Carlson & Anthony Lazo
 
+## References (for both client.py and server.py):
+- https://www.geeksforgeeks.org/python-program-find-ip-address/
+- https://github.com/katmfoo/python-client-server
+- https://www.geeksforgeeks.org/how-to-validate-an-ip-address-using-regex/
+- ChatGPT, for some initial code reference, bugfixes, and code cleanup
+
 ## Compile Instructions
 
 Instructions are different depending on if you want to run the code on 2/3 hosts or just through localhost.

@@ -2,12 +2,6 @@ import socket
 import threading
 import time
 
-# References (for both client.py and server.py):
-# https://www.geeksforgeeks.org/python-program-find-ip-address/
-# https://github.com/katmfoo/python-client-server
-# https://www.geeksforgeeks.org/how-to-validate-an-ip-address-using-regex/
-# ChatGPT, for some initial code reference, bugfixes, and code cleanup
-
 USE_LOCALHOST = False # If you want to change this, you should also change it in client.py
     
 # Define server IP and port
